@@ -53,8 +53,8 @@ def crawl_mw(cfg, fetcher):
                 params.update({k: v for k, v in data["continue"].items()})
             else:
                 break
-        for i in range(0, len(titles), 50):
-            batch = titles[i:i + 50]
+        for i in range(0, len(titles), 20):
+            batch = titles[i:i + 20]
             data = _mw_get(fetcher, cfg, {
                 "action": "query", "prop": "revisions", "rvprop": "content",
                 "rvslots": "main", "format": "json", "formatversion": "2",

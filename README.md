@@ -5,7 +5,8 @@ SearXNG とは完全に別物の、独立した全文検索サービス。バッ
 
 - **API エンドポイント**: `https://wiki-search.hikamer.f5.si`
 - **インデックス名**: `wiki_rag`
-- **デモ検索ページ**: https://wiki-search.hikamer.f5.si/web/ (または本リポジトリの `web/index.html`)
+- **検索専用キー**: `eb1f1f81c3bbcf6ecc544ba34b31c98007de0db43762af2ffcf26171ee8ab1b1` (search専用・wiki_rag限定・読み取りのみ)
+- **デモ検索ページ**: https://maebahesioru.github.io/wiki-rag-search/ (GitHub Pages)
 
 ## 収録Wiki (25)
 
