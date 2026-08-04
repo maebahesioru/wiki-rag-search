@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """プラットフォーム別クローラー。各関数は (title, text, url, ns) を yield する"""
 import re
+import time
 import urllib.parse
 import xml.etree.ElementTree as ET
 
@@ -14,29 +15,52 @@ def _safe_title(t):
 
 # ---------------- MediaWiki API ----------------
 
+def _mw_get(fetcher, cfg, params):
+    api = cfg["api"]
+    for attempt in range(5):
+        if cfg.get("pow"):
+            data = hikamers_get_json(fetcher, params)
+            return data
+        fetcher.polite(api)
+        r = fetcher.session_for(api).get(api, params=params)
+        if r.status_code == 200:
+            return r.json()
+        if r.status_code in (403, 429) and attempt < 4:
+            time.sleep(2 ** attempt + 2)
+            continue
+        raise RuntimeError(f"mw api {api}: HTTP {r.status_code}")
+    raise RuntimeError(f"mw api {api}: retries exhausted")
+
+
 def crawl_mw(cfg, fetcher):
+    """2段階: list=allpages でタイトル一覧 → titles=50件ずつ revisions 取得。
+    ※ 一部WikiのWAFは generator=allpages を403でブロックするが list=allpages は通る"""
     api = cfg["api"]
     site = cfg["site"]
     for ns in cfg.get("namespaces", [0]):
+        titles = []
         params = {
-            "action": "query", "generator": "allpages", "gapnamespace": ns,
-            "gaplimit": "500", "prop": "revisions", "rvprop": "content",
-            "rvslots": "main", "format": "json", "formatversion": "2",
+            "action": "query", "list": "allpages", "apnamespace": ns,
+            "aplimit": "500", "format": "json", "formatversion": "2",
         }
-        cont = None
         while True:
-            if cont:
-                params["gapcontinue"] = cont
-            if cfg.get("pow"):
-                data = hikamers_get_json(fetcher, params)
+            data = _mw_get(fetcher, cfg, params)
+            for p in data.get("query", {}).get("allpages", []):
+                t = _safe_title(p.get("title", ""))
+                if t and "|" not in t:
+                    titles.append(t)
+            if "continue" in data:
+                params.update({k: v for k, v in data["continue"].items()})
             else:
-                fetcher.polite(api)
-                r = fetcher.session_for(api).get(api, params=params)
-                if r.status_code != 200:
-                    raise RuntimeError(f"mw api {api}: HTTP {r.status_code}")
-                data = r.json()
-            pages = data.get("query", {}).get("pages", [])
-            for p in pages:
+                break
+        for i in range(0, len(titles), 50):
+            batch = titles[i:i + 50]
+            data = _mw_get(fetcher, cfg, {
+                "action": "query", "prop": "revisions", "rvprop": "content",
+                "rvslots": "main", "format": "json", "formatversion": "2",
+                "titles": "|".join(batch),
+            })
+            for p in data.get("query", {}).get("pages", []):
                 title = _safe_title(p.get("title", ""))
                 if not title:
                     continue
@@ -54,11 +78,6 @@ def crawl_mw(cfg, fetcher):
                     continue
                 url = site + urllib.parse.quote(title)
                 yield title, text, url, ns
-            # generator + prop=revisions は gapcontinue と rvcontinue の両方が返る → 全部引き継ぐ
-            if "continue" in data:
-                params.update({k: v for k, v in data["continue"].items()})
-            else:
-                break
 
 
 # ---------------- atwiki ----------------

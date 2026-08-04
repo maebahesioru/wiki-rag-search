@@ -14,7 +14,7 @@ WIKIS = [
     {"key": "memo_hikakinmania",   "label": "hikakin-mania (memo.wiki)",    "platform": "memo",    "site": "https://hikakin-mania.memo.wiki/"},
     {"key": "fandom_tsuihaikaiwai","label": "ツイ廃界隈 Wiki (Fandom)",      "platform": "mw",     "api": "https://tsuihaikaiwai.fandom.com/ja/api.php", "site": "https://tsuihaikaiwai.fandom.com/ja/",  "namespaces": [0]},
     {"key": "ww_sfxxtdz66",        "label": "m / ヒカマーwiki (wikiwiki)",  "platform": "wikiwiki", "site": "https://wikiwiki.jp/sfxxtdz66/"},
-    {"key": "inmu",                "label": "淫ク☆解説Wiki",                "platform": "mw",     "api": "https://inmu-cookie-wiki.org/api.php",     "site": "https://inmu-cookie-wiki.org/wiki/",       "namespaces": [0]},
+    {"key": "inmu",                "label": "淫ク☆解説Wiki",                "platform": "mw",     "api": "https://inmu-cookie-wiki.org/api.php",     "site": "https://inmu-cookie-wiki.org/wiki/",       "namespaces": [0], "delay": 1.2},
     {"key": "ww_noire",            "label": "Xのヒカマニ界隈(ヒカマー) Wiki", "platform": "wikiwiki", "site": "https://wikiwiki.jp/noire/"},
     {"key": "memo_gaymasuo",       "label": "gaymasuo (memo.wiki)",         "platform": "memo",    "site": "https://gaymasuo.memo.wiki/"},
     {"key": "atw_twihigh_tcg",     "label": "ツイ廃TCG",                     "platform": "atwiki",  "site": "https://w.atwiki.jp/twihigh_tcg/"},

@@ -10,8 +10,9 @@ from curl_cffi import requests as req
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
 
 class Fetcher:
-    def __init__(self, delay=0.4):
+    def __init__(self, delay=0.4, domain_delays=None):
         self.delay = delay
+        self.domain_delays = domain_delays or {}
         self.sessions = {}  # domain -> session
         self.last_hit = {}
 
@@ -26,7 +27,7 @@ class Fetcher:
         domain = urllib.parse.urlparse(url).netloc
         now = time.time()
         last = self.last_hit.get(domain, 0)
-        wait = self.delay - (now - last)
+        wait = max(self.delay, self.domain_delays.get(domain, 0)) - (now - last)
         if wait > 0:
             time.sleep(wait)
         self.last_hit[domain] = time.time()

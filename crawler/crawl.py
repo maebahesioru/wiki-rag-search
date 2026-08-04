@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 import sys
+import urllib.parse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -35,6 +36,10 @@ def crawl_one(cfg, out_path, force=False, chunk_size=1000):
         print(f"  skip (exists): {cfg['key']}")
         return 0
     fetcher = Fetcher(delay=0.4)
+    if cfg.get("delay"):
+        domain = urllib.parse.urlparse(cfg.get("site", "")).netloc
+        if domain:
+            fetcher.domain_delays[domain] = cfg["delay"]
     if cfg.get("pow"):
         try:
             solve_hikamers_pow(fetcher)
