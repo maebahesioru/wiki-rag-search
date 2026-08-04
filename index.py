@@ -57,7 +57,10 @@ def main():
                 line = line.strip()
                 if not line:
                     continue
-                docs.append(json.loads(line))
+                d = json.loads(line)
+                # Meilisearch の ID は英数字と - _ のみ → パイプをハイフンに
+                d["id"] = d["id"].replace("|", "-")
+                docs.append(d)
         if not docs:
             continue
         for i in range(0, len(docs), 1000):
