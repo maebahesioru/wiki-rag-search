@@ -40,7 +40,7 @@ def main():
 
     # settings
     settings = {
-        "filterableAttributes": ["wiki", "page_title", "namespace"],
+        "filterableAttributes": ["wiki", "page_title", "namespace", "url"],
         "searchableAttributes": ["page_title", "text"],
         "rankingRules": ["words", "typo", "proximity", "attribute", "sort", "exactness"],
         "distinctAttribute": None,

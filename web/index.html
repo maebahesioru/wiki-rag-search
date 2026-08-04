@@ -32,7 +32,7 @@ async function search() {
   const res = await fetch(API, {
     method: "POST",
     headers: {"Content-Type": "application/json", "Authorization": "Bearer " + KEY},
-    body: JSON.stringify({q: q, limit: 20, attributesToHighlight: ["text"], highlightPreTag: "<mark>", highlightPostTag: "</mark>"})
+    body: JSON.stringify({q: q, limit: 20, distinct: "url", attributesToHighlight: ["text"], highlightPreTag: "<mark>", highlightPostTag: "</mark>"})
   });
   const data = await res.json();
   document.getElementById("stats").textContent = `ヒット: ${data.estimatedTotalHits} 件 / 処理時間: ${data.processingTimeMs}ms`;

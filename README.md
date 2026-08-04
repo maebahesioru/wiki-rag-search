@@ -79,6 +79,21 @@ for hit in resp.json()["hits"]:
 
 `hits[]` に以下のフィールド: `id`, `wiki`, `wiki_label`, `page_title`, `url`, `namespace`, `text` (チャンク本文), `_formatted` (ハイライト付き)
 
+### チャンク分割について (重要)
+
+各ページはRAG用に約1000文字の**チャンク**に分割されており、検索結果はページ単位ではなく**チャンク単位**で返る。
+そのため同じページが複数ヒットすることがある (QVC福島の例: 同一ページの5チャンクがヒット等)。
+
+- **RAG用途**: そのままのチャンク結果が最適 (1ページの複数チャンクが全部コンテキストになる)
+- **人間向けUI**: `"distinct": "url"` を指定するとページ単位にまとまる:
+
+```bash
+curl -s -X POST "https://wiki-search.hikamer.f5.si/indexes/wiki_rag/search" \
+  -H "Authorization: Bearer $WIKI_SEARCH_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"q": "QVC福島", "distinct": "url", "limit": 10}'
+```
+
 ## 構成
 
 ```
