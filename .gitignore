@@ -3,3 +3,4 @@ __pycache__/
 corpus/
 *.jsonl
 .env
+.meili_master_key
