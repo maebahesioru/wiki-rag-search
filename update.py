@@ -163,7 +163,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--wikis", default="", help="comma-separated keys, empty=all")
     ap.add_argument("--since-days", type=int, default=7, help="初回取得時の遡り日数")
-    ap.add_argument("--outdir", default=os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "corpus")))
+    ap.add_argument("--outdir", default=os.path.normpath(os.path.join(_ROOT, "corpus")))
     args = ap.parse_args()
 
     os.makedirs(args.outdir, exist_ok=True)
@@ -183,11 +183,21 @@ def main():
                 continue
         if cfg["platform"] == "mw":
             since = state.get(cfg["key"]) or (datetime.now(timezone.utc) - timedelta(days=args.since_days)).strftime("%Y-%m-%dT%H:%M:%SZ")
-            try:
-                update_mw(cfg, fetcher, args.outdir, since)
-            except Exception as e:
-                print(f"  ERROR: {e!r}")
-                continue
+            corpus_file = os.path.join(args.outdir, cfg["key"] + ".jsonl")
+            if not os.path.exists(corpus_file) or os.path.getsize(corpus_file) == 0:
+                # corpus 未作成 → フルクロール (コールドスタート/データ吹き飛び対策)
+                print("  corpus empty -> full crawl")
+                try:
+                    crawl_one(cfg, corpus_file, force=True)
+                except Exception as e:
+                    print(f"  ERROR: {e!r}")
+                    continue
+            else:
+                try:
+                    update_mw(cfg, fetcher, args.outdir, since)
+                except Exception as e:
+                    print(f"  ERROR: {e!r}")
+                    continue
         else:
             out = os.path.join(args.outdir, cfg["key"] + ".jsonl")
             try:
