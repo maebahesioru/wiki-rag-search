@@ -102,3 +102,23 @@ python index.py --meili https://wiki-search.hikamer.f5.si --key $MASTER_KEY
 ```
 
 チャンクは `id` ベースの upsert なので、再実行しても重複しない。
+
+## 記事更新の追従 (増分更新)
+
+```bash
+python update.py                   # 全Wikiの変更を拾って更新
+python update.py --wikis krsw      # 特定Wikiのみ
+python index.py --meili https://wiki-search.hikamer.f5.si --key $MASTER_KEY
+```
+
+- **MediaWiki系 (8Wiki)**: `list=recentchanges` で前回更新以降に変更/削除されたページだけ取得。削除されたページのチャンクもインデックスから消す
+- **非MW系 (17Wiki)**: 小規模なので全再クロール
+- 最終実行時刻は `corpus/.lastrun.json` に保存。初回は直近7日分を取得
+
+## 名前空間カバレッジ
+
+MediaWiki系は **全名前空間を収録** (MediaWikiシステムメッセージ ns8/9 のみ除外):
+- 標準(0)・トーク(1)・利用者(2)・プロジェクト(4)・ファイル(6)・テンプレート(10)・ヘルプ(12)・カテゴリ(14)・モジュール(828)
+- krsw独自: 恒辞苑(3004)・恒心文庫(3006)・恒心AA保管庫(3008)
+- yjsnpi独自: 書き起こし(100)・怪文書(102)
+- Fandom: フォーラム(110)・ユーザーブログ(500)・ブログ(502) ほか

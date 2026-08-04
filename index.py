@@ -48,6 +48,32 @@ def main():
     r = requests.patch(f"{base}/indexes/{args.index}/settings", json=settings, headers=h, timeout=60)
     print("settings:", r.status_code, r.json().get("status", r.text[:80]))
 
+    # 削除ID処理 (update.py が corpus/updates/*.deleted.jsonl に書いたもの)
+    del_files = sorted(glob.glob(os.path.join(args.corpus, "updates", "*.deleted.jsonl")))
+    if del_files:
+        ids = []
+        for fp in del_files:
+            with open(fp, encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line:
+                        ids.append(json.loads(line)["id"].replace("|", "-"))
+        for i in range(0, len(ids), 1000):
+            batch = ids[i:i + 1000]
+            r = requests.post(f"{base}/indexes/{args.index}/documents/delete-batch",
+                              json=batch, headers=h, timeout=120)
+            if r.status_code not in (200, 202):
+                print(f"  delete-batch failed: {r.status_code} {r.text[:200]}")
+                sys.exit(1)
+            st, err = wait_task(base, args.key, r.json()["taskUid"])
+            print(f"  deleted {len(batch)} (task {st})")
+        # 処理済み削除ファイルは消す
+        for fp in del_files:
+            try:
+                os.remove(fp)
+            except OSError:
+                pass
+
     files = sorted(glob.glob(os.path.join(args.corpus, "*.jsonl")))
     total = 0
     for fp in files:

@@ -32,12 +32,25 @@ def _mw_get(fetcher, cfg, params):
     raise RuntimeError(f"mw api {api}: retries exhausted")
 
 
+def _mw_namespaces(fetcher, cfg):
+    """siteinfo から全名前空間を取得 (8=MediaWiki システムメッセージ と 9 以外)"""
+    cache = getattr(_mw_namespaces, "_cache", {})
+    key = cfg["key"]
+    if key not in cache:
+        data = _mw_get(fetcher, cfg, {"action": "query", "meta": "siteinfo", "siprop": "namespaces",
+                                      "format": "json", "formatversion": "2"})
+        ns = data["query"]["namespaces"]
+        lst = sorted(int(k) for k in ns.keys() if int(k) >= 0 and int(k) not in (8, 9))
+        cache[key] = lst
+    return cache[key]
+
+
 def crawl_mw(cfg, fetcher):
-    """2段階: list=allpages でタイトル一覧 → titles=50件ずつ revisions 取得。
+    """2段階: list=allpages でタイトル一覧 → titles=20件ずつ revisions 取得。
     ※ 一部WikiのWAFは generator=allpages を403でブロックするが list=allpages は通る"""
     api = cfg["api"]
     site = cfg["site"]
-    for ns in cfg.get("namespaces", [0]):
+    for ns in _mw_namespaces(fetcher, cfg):
         titles = []
         params = {
             "action": "query", "list": "allpages", "apnamespace": ns,
@@ -74,7 +87,11 @@ def crawl_mw(cfg, fetcher):
                 if not content or not content.strip():
                     continue
                 text = wikitext_to_text(content)
-                if len(text) < 20:
+                if ns == 6:
+                    # ファイルページ: 説明が無くてもファイル名自体を検索可能にする
+                    if len(text) < 20:
+                        text = title
+                elif len(text) < 20:
                     continue
                 url = site + urllib.parse.quote(title)
                 yield title, text, url, ns
