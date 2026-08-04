@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>Wiki RAG Search</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 860px; margin: 0 auto; padding: 24px; background: #111; color: #ddd; }
+  h1 { font-size: 22px; }
+  input[type=text] { width: 70%; padding: 10px; font-size: 16px; background: #222; color: #eee; border: 1px solid #444; border-radius: 6px; }
+  button { padding: 10px 18px; font-size: 16px; background: #4a9; color: #fff; border: 0; border-radius: 6px; cursor: pointer; }
+  .result { border-bottom: 1px solid #333; padding: 14px 0; }
+  .result h3 { margin: 0 0 6px; font-size: 16px; }
+  .result .meta { color: #888; font-size: 12px; margin-bottom: 6px; }
+  .result .snippet { font-size: 14px; line-height: 1.6; white-space: pre-wrap; }
+  mark { background: #ff9; color: #111; }
+  .stats { color: #777; font-size: 12px; margin-top: 8px; }
+</style>
+</head>
+<body>
+<h1>Wiki RAG Search <span style="font-size:13px;color:#888">(25 wikis)</span></h1>
+<input type="text" id="q" placeholder="例: ヒカキン 本名 / 唐澤貴洋 / クッキー☆">
+<button onclick="search()">検索</button>
+<div class="stats" id="stats"></div>
+<div id="results"></div>
+<script>
+const API = "https://wiki-search.hikamer.f5.si/indexes/wiki_rag/search";
+const KEY = "eb1f1f81c3bbcf6ecc544ba34b31c98007de0db43762af2ffcf26171ee8ab1b1";
+async function search() {
+  const q = document.getElementById("q").value.trim();
+  if (!q) return;
+  const res = await fetch(API, {
+    method: "POST",
+    headers: {"Content-Type": "application/json", "Authorization": "Bearer " + KEY},
+    body: JSON.stringify({q: q, limit: 20, attributesToHighlight: ["text"], highlightPreTag: "<mark>", highlightPostTag: "</mark>"})
+  });
+  const data = await res.json();
+  document.getElementById("stats").textContent = `ヒット: ${data.estimatedTotalHits} 件 / 処理時間: ${data.processingTimeMs}ms`;
+  const box = document.getElementById("results");
+  box.innerHTML = "";
+  for (const hit of data.hits) {
+    const snip = (hit._formatted && hit._formatted.text) ? hit._formatted.text : hit.text;
+    const div = document.createElement("div");
+    div.className = "result";
+    // snippet は一度エスケープしてから mark タグだけ復元 (XSS回避)
+    const safe = escapeHtml(snip.slice(0, 400)).replace(/&lt;mark&gt;/g, "<mark>").replace(/&lt;\/mark&gt;/g, "</mark>");
+    div.innerHTML = `<h3>${escapeHtml(hit.page_title)}</h3>
+      <div class="meta">${escapeHtml(hit.wiki_label)} ・ <a href="${escapeHtml(hit.url)}" target="_blank">${escapeHtml(hit.url)}</a></div>
+      <div class="snippet">${safe}</div>`;
+    box.appendChild(div);
+  }
+}
+function escapeHtml(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+document.getElementById("q").addEventListener("keydown", e => { if (e.key === "Enter") search(); });
+</script>
+</body>
+</html>
