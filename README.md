@@ -107,6 +107,16 @@ index.py              corpus → Meilisearch インデックス
 docker-compose.yml    Meilisearch 本体 (Coolify デプロイ用)
 ```
 
+## ヒカマー図書館 (ツイートアーカイブ) の取込み
+
+ヒカマー図書館のYahooリアルタイム検索TSVアーカイブ (public/2008-2026/*.tsv、約271万ツイート) も同一インデックス `wiki_rag` に含まれる。`wiki = "hikamerslibrary"` でフィルタ可能。
+
+- **取込み** (サーバー側): `import_library.py` — `/opt/hikamerslibrary/public/` のTSVをmtime比較で増分処理し、`corpus_library/hikamerslibrary.jsonl` に追記 + Meilisearchにupsert。毎日22時の `run_update_server.sh` が自動実行
+- **同期** (PC側、スクレイパー実行後に手動): `python scripts/sync_library_to_server.py` — 変更/新規TSVだけtarでVMに転送
+- **フィールド**: `text`=ツイート本文, `user`=ユーザー名, `date`=YYYY-MM-DD, `tweet_id`, `url`=図書館の日別TSV+IDアンカー
+- **フィルタ例**: `{"filter": "wiki = hikamerslibrary AND date >= 2025-01-01"}`
+- 注意: ツイートは短文のため、汎用クエリはツイートが結果を占めやすい。Wiki中心なら `"filter": "wiki != hikamerslibrary"` を使う
+
 ## 再クロール手順
 
 ```bash
