@@ -26,4 +26,9 @@ WIKIS = [
     {"key": "fc2_horrorinm",       "label": "ホラー・ミステリー淫夢Wiki",    "platform": "fc2",     "site": "https://horrorinm.wiki.fc2.com/"},
     {"key": "yjsnpi",              "label": "真夏の夜の淫夢Wiki",            "platform": "mw",     "api": "https://wiki.yjsnpi.nu/w/api.php",        "site": "https://wiki.yjsnpi.nu/wiki/"},
     {"key": "atw_cookie_kaisetu",  "label": "クッキー☆解説Wiki",            "platform": "atwiki",  "site": "https://w.atwiki.jp/cookie_kaisetu/"},
+    {"key": "bbs_810ch_hikakin",   "label": "810ちゃんねる ヒカキン板",     "platform": "810ch",    "site": "https://810ch.yajuvideo.st/hikakin"},
+    {"key": "bbs_810ch_fukushima", "label": "810ちゃんねる 福島板",          "platform": "810ch",    "site": "https://810ch.yajuvideo.st/fukushima"},
+    {"key": "bbs_810ch_aflac",     "label": "810ちゃんねる アフラック板",   "platform": "810ch",    "site": "https://810ch.yajuvideo.st/aflac"},
+    {"key": "nicodic_hikamar",     "label": "ニコニコ大百科 ヒカマー",      "platform": "nicodic",  "site": "https://dic.nicovideo.jp/a/%E3%83%92%E3%82%AB%E3%83%9E%E3%83%BC",
+     "board": "https://dic.nicovideo.jp/b/a/%E3%83%92%E3%82%AB%E3%83%9E%E3%83%BC"},
 ]

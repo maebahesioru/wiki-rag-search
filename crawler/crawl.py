@@ -13,7 +13,8 @@ from config import WIKIS
 from fetch import Fetcher, solve_hikamers_pow
 from extract import chunk_text
 from adapters import (crawl_mw, crawl_atwiki, crawl_seesaa, crawl_memo,
-                      crawl_fc2, crawl_wikiwiki, crawl_wiki3)
+                      crawl_fc2, crawl_wikiwiki, crawl_wiki3, crawl_810ch,
+                      crawl_nicodic)
 
 ADAPTERS = {
     "mw": crawl_mw,
@@ -23,6 +24,8 @@ ADAPTERS = {
     "fc2": crawl_fc2,
     "wikiwiki": crawl_wikiwiki,
     "wiki3": crawl_wiki3,
+    "810ch": crawl_810ch,
+    "nicodic": crawl_nicodic,
 }
 
 

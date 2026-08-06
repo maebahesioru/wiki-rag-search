@@ -284,3 +284,93 @@ def crawl_wiki3(cfg, fetcher):
                 title = re.sub(r"\s*[|｜-].*$", "", t)
         if len(text) >= 20:
             yield title, text, url, 0
+
+
+def crawl_810ch(cfg, fetcher):
+    """810ちゃんねる: 板トップ → スレ一覧 → 全レス。スレ=1ページ(全レス連結)"""
+    board = cfg["site"].rstrip("/")
+    bname = board.rsplit("/", 1)[-1]
+    html = fetcher.get_text(board)
+    tids = sorted(set(re.findall(r"/" + re.escape(bname) + r"/(\d+)", html)))
+    if not tids:
+        print(f"  810ch {bname}: no threads")
+        return
+    for tid in tids:
+        url = f"{board}/{tid}"
+        try:
+            th = fetcher.get_text(url)
+        except Exception:
+            continue
+        m = re.search(r"<title>(.*?)</title>", th, re.DOTALL)
+        title = m.group(1).strip() if m else f"スレ{tid}"
+        title = re.sub(r"\s*-\s*[^-]*掲示板[^-]*-\s*810ちゃんねる\s*$", "", title).strip()
+        blocks = re.split(r'<div\s+id="(\d+)"\s+class="post"[^>]*>', th)
+        parts = []
+        for k in range(1, len(blocks) - 1, 2):
+            num = blocks[k]
+            ph = blocks[k + 1]
+            nm = re.search(r'<span class="name"[^>]*>(.*?)</span>', ph, re.DOTALL)
+            dm = re.search(r'<span class="dateid"[^>]*>(.*?)</span>', ph, re.DOTALL)
+            mm = re.search(r'<div class="message"[^>]*>(.*?)</div>', ph, re.DOTALL)
+            name = html_to_text(nm.group(1)) if nm else ""
+            date = html_to_text(dm.group(1)) if dm else ""
+            body = html_to_text(mm.group(1)) if mm else ""
+            if body:
+                parts.append(f"{num} {name} {date}\n{body}".strip())
+        text = "\n\n".join(parts)
+        if len(text) >= 20:
+            yield title, text, url, 0
+
+
+def crawl_nicodic(cfg, fetcher):
+    """ニコニコ大百科: 記事本文 + 記事掲示板(全ページ、30レス刻み)"""
+    art_url = cfg["site"]
+    board = cfg["board"]
+    ah = fetcher.get_text(art_url)
+    tm = re.search(r"<title>(.*?)</title>", ah, re.DOTALL)
+    art_title = tm.group(1).strip() if tm else "記事"
+    art_title = re.sub(r"\s*-\s*ニコニコ大百科\s*$", "", art_title).strip()
+    art_title = re.sub(r"\s*\[単語記事\]\s*$", "", art_title).strip()
+    # 記事本文
+    i = ah.find('<div class="article" id="article">')
+    if i > 0:
+        start = ah.find("<p", i)
+        if start < 0:
+            start = ah.find("<h2", i)
+        end = ah.find("a-bottomMenu", i)
+        if end < 0:
+            end = min(len(ah), i + 40000)
+        if start > 0 and end > start:
+            body = html_to_text(ah[start:end])
+            body = re.sub(r"\n{3,}", "\n\n", body).strip()
+            if len(body) >= 20:
+                yield f"{art_title} (記事)", body, art_url, 0
+    # 掲示板
+    board = cfg["board"].rstrip("/")
+    bh = fetcher.get_text(board + "/1-")
+    last_start = 1
+    for m in re.finditer(r"/b/a/[^\"']*?/(\d+)-", bh):
+        last_start = max(last_start, int(m.group(1)))
+    res_parts = []
+    for sn in range(1, last_start + 1, 30):
+        ph = fetcher.get_text(board + f"/{sn}-")
+        if "st-bbs_reshead" not in ph:
+            continue
+        blocks = re.split(r'<dt class="st-bbs_reshead"[^>]*data-res_no="(\d+)"[^>]*>', ph)
+        for k in range(1, len(blocks) - 1, 2):
+            res_no = blocks[k]
+            rb = blocks[k + 1]
+            body = ""
+            dd = rb.find('<dd class="st-bbs_resbody"')
+            if dd >= 0:
+                bm = re.search(r'<div class="bbs_resbody_inner"[^>]*>(.*?)</div>', rb[dd:], re.DOTALL)
+                if bm:
+                    body = html_to_text(bm.group(1))
+            nm = re.search(r'<span class="st-bbs_name bbs_name"[^>]*>(.*?)</span>', rb, re.DOTALL)
+            ts = re.search(r'<span class="bbs_resInfo_resTime"[^>]*>(.*?)</span>', rb, re.DOTALL)
+            name = html_to_text(nm.group(1)) if nm else ""
+            tsv = html_to_text(ts.group(1)) if ts else ""
+            if body:
+                res_parts.append(f"{res_no} {name} {tsv}\n{body}")
+    if res_parts:
+        yield f"{art_title} (掲示板)", "\n\n".join(res_parts), board, 0
