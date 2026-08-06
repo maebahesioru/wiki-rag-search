@@ -312,7 +312,7 @@ def crawl_810ch(cfg, fetcher):
             ph = blocks[k + 1]
             nm = re.search(r'<span class="name"[^>]*>(.*?)</span>', ph, re.DOTALL)
             dm = re.search(r'<span class="dateid"[^>]*>(.*?)</span>', ph, re.DOTALL)
-            mm = re.search(r'<div class="message"[^>]*>(.*?)</div>', ph, re.DOTALL)
+            mm = re.search(r'<div class="message[^>]*>(.*?)</div>', ph, re.DOTALL)
             name = html_to_text(nm.group(1)) if nm else ""
             date = html_to_text(dm.group(1)) if dm else ""
             body = html_to_text(mm.group(1)) if mm else ""
