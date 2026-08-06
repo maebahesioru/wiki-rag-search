@@ -287,16 +287,17 @@ def crawl_wiki3(cfg, fetcher):
 
 
 def crawl_810ch(cfg, fetcher):
-    """810ちゃんねる: 板トップ → スレ一覧 → 全レス。スレ=1ページ(全レス連結)"""
+    """810ちゃんねる (および read.cgi 形式のオニオン掲示板): 板トップ → スレ一覧 → 全レス。スレ=1ページ(全レス連結)"""
     board = cfg["site"].rstrip("/")
     bname = board.rsplit("/", 1)[-1]
+    read_url = cfg.get("read_url", "").rstrip("/")
     html = fetcher.get_text(board)
     tids = sorted(set(re.findall(r"/" + re.escape(bname) + r"/(\d+)", html)))
     if not tids:
         print(f"  810ch {bname}: no threads")
         return
     for tid in tids:
-        url = f"{board}/{tid}"
+        url = f"{read_url}/{tid}/" if read_url else f"{board}/{tid}"
         try:
             th = fetcher.get_text(url)
         except Exception:

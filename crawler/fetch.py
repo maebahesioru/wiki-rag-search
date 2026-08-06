@@ -10,16 +10,21 @@ from curl_cffi import requests as req
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
 
 class Fetcher:
-    def __init__(self, delay=0.4, domain_delays=None):
+    def __init__(self, delay=0.4, domain_delays=None, proxies=None):
         self.delay = delay
         self.domain_delays = domain_delays or {}
+        self.proxies = proxies or {}  # domain -> "socks5h://127.0.0.1:9050"
         self.sessions = {}  # domain -> session
         self.last_hit = {}
 
     def session_for(self, url):
         domain = urllib.parse.urlparse(url).netloc
         if domain not in self.sessions:
-            self.sessions[domain] = req.Session(impersonate="chrome124", timeout=30)
+            kw = {"impersonate": "chrome124", "timeout": 60}
+            proxy = self.proxies.get(domain)
+            if proxy:
+                kw["proxies"] = {"http": proxy, "https": proxy}
+            self.sessions[domain] = req.Session(**kw)
             self.sessions[domain].headers.update({"User-Agent": UA, "Accept-Language": "ja,en;q=0.8"})
         return self.sessions[domain]
 

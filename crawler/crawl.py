@@ -43,6 +43,10 @@ def crawl_one(cfg, out_path, force=False, chunk_size=1000):
         domain = urllib.parse.urlparse(cfg.get("site", "")).netloc
         if domain:
             fetcher.domain_delays[domain] = cfg["delay"]
+    if cfg.get("proxy"):
+        domain = urllib.parse.urlparse(cfg.get("site", "")).netloc
+        if domain:
+            fetcher.proxies[domain] = cfg["proxy"]
     if cfg.get("pow"):
         try:
             solve_hikamers_pow(fetcher)

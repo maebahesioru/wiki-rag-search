@@ -31,4 +31,8 @@ WIKIS = [
     {"key": "bbs_810ch_aflac",     "label": "810ちゃんねる アフラック板",   "platform": "810ch",    "site": "https://810ch.yajuvideo.st/aflac"},
     {"key": "nicodic_hikamar",     "label": "ニコニコ大百科 ヒカマー",      "platform": "nicodic",  "site": "https://dic.nicovideo.jp/a/%E3%83%92%E3%82%AB%E3%83%9E%E3%83%BC",
      "board": "https://dic.nicovideo.jp/b/a/%E3%83%92%E3%82%AB%E3%83%9E%E3%83%BC"},
+    {"key": "onion_hokuhoku",      "label": "ヒカマーズTor掲示板 ほくほくポテト板", "platform": "810ch",
+     "site": "http://hikamerj6f6g2e5eckm5titigpckjktrawjp4e4i3o4oa5xeezlcbdqd.onion/hokuhokupotato/",
+     "read_url": "http://hikamerj6f6g2e5eckm5titigpckjktrawjp4e4i3o4oa5xeezlcbdqd.onion/hikamersbbs/read.cgi/hokuhokupotato/",
+     "proxy": "socks5h://127.0.0.1:9050", "delay": 2.0},
 ]
